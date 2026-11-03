@@ -1,0 +1,41 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/android-apk-build
+    paths:
+      - "app/**"
+      - "assets/**"
+      - "db/**"
+      - "lib/**"
+      - "package.json"
+      - "package-lock.json"
+      - "app.config.js"
+      - "eas.json"
+      - "babel.config.js"
+      - "tsconfig.json"
+      - ".github/workflows/android-apk.yml"
+
+jobs:
+  build:
+    name: Create installable APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download project source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install project dependencies
+        run: npm ci
+
+      - name: Build APK with Expo
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: npx --yes eas-cli@latest build --platform android --profile production --non-interactive --wait
